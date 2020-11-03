@@ -3,8 +3,6 @@ import tkinter as tk
 import math
 import time
 
-print(dir(math))
-
 root = tk.Tk()
 fr = tk.Frame(root)
 root.geometry('800x600')
@@ -14,7 +12,7 @@ score = 0
 
 
 class ball():
-    def __init__(self, x=40, y=450, vx=0, vy=0):
+    def __init__(self, x=40, y=450, Vx=0, Vy=0):
         """ Конструктор класса ball
 
         Args:
@@ -24,8 +22,8 @@ class ball():
         self.x = x
         self.y = y
         self.r = 10
-        self.vx = vx
-        self.vy = vy
+        self.Vx = Vx
+        self.Vy = Vy
         self.color = choice(['blue', 'green', 'red', 'brown'])
         self.id = canv.create_oval(
             self.x - self.r,
@@ -54,15 +52,15 @@ class ball():
         """
         g = 1.5
         if self.x - self.r < 0:
-            self.vx *= -1
+            self.Vx *= -1
         if self.x + self.r > 800:
-            self.vx *= -1
+            self.Vx *= -1
         if self.y + self.r > 600:
-            self.vy *= -0.8
-            self.y -= self.vy
-        self.vy -= g
-        self.x += self.vx
-        self.y -= self.vy
+            self.Vy *= -0.8
+            self.y -= self.Vy
+        self.Vy -= g
+        self.x += self.Vx
+        self.y -= self.Vy
         self.live += 1
         self.set_coords()
         self.set_coords()
@@ -110,8 +108,8 @@ class gun():
         new_ball = ball()
         new_ball.r += 5
         self.an = math.atan((event.y - new_ball.y) / (event.x - new_ball.x))
-        new_ball.vx = self.f2_power * math.cos(self.an)
-        new_ball.vy = - self.f2_power * math.sin(self.an)
+        new_ball.Vx = self.f2_power * math.cos(self.an)
+        new_ball.Vy = - self.f2_power * math.sin(self.an)
         self.f2_on = 0
         self.f2_power = 10
         balls += [new_ball]
@@ -146,21 +144,21 @@ class target():
         self.x = rnd(600, 780)
         self.y = rnd(300, 550)
         self.r = rnd(20, 50)
-        self.vx = rnd(2, 10)
-        self.vy = rnd(2, 10)
+        self.Vx = rnd(2, 10)
+        self.Vy = rnd(2, 10)
         self.color = 'red'
         self.points = 0
         self.live = 1
         self.id = canv.create_oval(self.x - self.r,
-            self.y - self.r,
-            self.x + self.r,
-            self.y + self.r,
-            fill=self.color)
+                                   self.y - self.r,
+                                   self.x + self.r,
+                                   self.y + self.r,
+                                   fill=self.color)
 
     def outbound(self):
         x = self.x = -100
-        self.vx = 0
-        self.vy = 0
+        self.Vx = 0
+        self.Vy = 0
         y = self.y
         r = self.r
         color = self.color = 'red'
@@ -173,8 +171,6 @@ class target():
         self.points += points
         return self.points
 
-
-
     def set_coords(self):
         canv.coords(
             self.id,
@@ -185,24 +181,58 @@ class target():
         )
 
     def move(self):
-        self.x += self.vx
-        self.y -= self.vy
-        print(self.vx,self.vy,self.x,self.y)
+        self.x += self.Vx
+        self.y -= self.Vy
         if self.x - self.r < 0:
-            self.vx = -self.vx
-            self.x += self.vx
+            self.Vx = -self.Vx
+            self.x += self.Vx
         if self.x + self.r > 800:
-            self.vx = -self.vx
-            self.x += self.vx
+            self.Vx = -self.Vx
+            self.x += self.Vx
         if self.y + self.r > 600:
-            self.vy = -self.vy
-            self.y -= self.vy
+            self.Vy = -self.Vy
+            self.y -= self.Vy
         if self.y - self.r < 0:
-            self.vy = -self.vy
+            self.Vy = -self.Vy
         self.set_coords()
 
     def deletes(self):
         canv.delete(self.id)
+
+
+class oskolki(target):
+    def __init__(self, x, y, r, k):
+        global score
+        self.x = x
+        self.y = y
+        self.r = r
+        self.Vx = rnd(2, 10) * k
+        self.Vy = 0
+        self.color = 'blue'
+        self.points = 0
+        self.live = 1
+        self.id = canv.create_oval(self.x - self.r,
+                                   self.y - self.r,
+                                   self.x + self.r,
+                                   self.y + self.r,
+                                   fill=self.color)
+
+    def move(self):
+        self.x += self.Vx
+        self.y -= self.Vy
+        self.Vy -= 1.5
+        if self.x - self.r < 0:
+            self.Vx = -self.Vx
+            self.x += self.Vx
+        if self.x + self.r > 800:
+            self.Vx = -self.Vx
+            self.x += self.Vx
+        if self.y + self.r > 600:
+            self.Vy = -0.7*self.Vy
+            self.y -= self.Vy
+        if self.y - self.r < 0:
+            self.Vy = -0.7*self.Vy
+        self.set_coords()
 
 
 def delay():
@@ -223,12 +253,16 @@ def delay():
 
 t1 = target()
 t2 = target()
+t1_osk1, t1_osk2, t2_osk1, t2_osk2 = (
+oskolki(-100, -100, 1, -1), oskolki(-100, -100, 1, -1), oskolki(-100, -100, 1, -1), oskolki(-100, -100, 1, -1))
 screen1 = canv.create_text(400, 300, text='', font='28')
 g1 = gun()
 bullet = 0
 balls = []
 targets = [t1, t2]
+kuski = [t1_osk1, t1_osk2, t2_osk1, t2_osk2]
 screen2 = canv.create_text(30, 30, text=score, font='28')
+
 
 def new_game(event=''):
     global gun, t1, screen1, balls, bullet, t2, score, targets
@@ -240,22 +274,37 @@ def new_game(event=''):
     t1 = target()
     t2 = target()
     targets = [t1, t2]
+    # oskolki(-100, -100, 1, -1), oskolki(-100, -100, 1, -1), oskolki(-100, -100, 1, -1), oskolki(-100, -100, 1, -1))
+    kuski = []
     bullet = 0
     balls = []
+    s = 0
     canv.bind('<Button-1>', g1.fire2_start)
     canv.bind('<ButtonRelease-1>', g1.fire2_end)
     canv.bind('<Motion>', g1.targetting)
     z = 0.025
     t1.live = 1
     t2.live = 1
-    while t1.live or t2.live:
+    while t1.live or t2.live or s == 1:
+
         for b in balls:
             b.move()
-            print(t1.x,t1.y)
             if b.live > 200:
                 b.deletes
                 balls.remove(b)
+            for a in kuski:
+                if b.hittest(a) and a.live:
+                    a.deletes()
+                    b.deletes()
+                    a.live = 0
+                    score += a.hit()
+                    b.live = 201
+                    balls.remove(b)
+                    canv.itemconfig(screen2, text=score)
+                    a.outbound()
+
             if b.hittest(t1) and t1.live:
+                kuski += [oskolki(t1.x, t1.y, t1.r / 2, -1), oskolki(t1.x, t1.y, t1.r / 3, 1)]
                 t1.deletes()
                 b.deletes()
                 t1.live = 0
@@ -265,6 +314,7 @@ def new_game(event=''):
                 canv.itemconfig(screen2, text=score)
                 t1.outbound()
             if b.hittest(t2) and t2.live:
+                kuski += [oskolki(t2.x, t2.y, t2.r / 3, -1), oskolki(t2.x, t2.y, t2.r / 2, 1)]
                 t2.live = 0
                 t2.deletes()
                 b.deletes()
@@ -273,8 +323,7 @@ def new_game(event=''):
                 balls.remove(b)
                 canv.itemconfig(screen2, text=score)
                 t2.outbound()
-            if t1.live + t2.live == 0:
-                print(1)
+            if t1.live + t2.live + s == 0:
                 for b in balls:
                     b.live = 201
                     b.deletes()
@@ -282,10 +331,14 @@ def new_game(event=''):
                 canv.itemconfig(screen1, text='Вы уничтожили цель за ' + str(bullet) + ' выстрелов')
                 canv.bind('<Button-1>', '')
                 canv.bind('<ButtonRelease-1', '')
-
+        s = 0
+        for a in kuski:
+            if a.live:
+                s = 1
         for t in targets:
             t.move()
-        print(t1.x,t1.y)
+        for a in kuski:
+            a.move()
         canv.update()
         time.sleep(z)
         g1.targetting()
